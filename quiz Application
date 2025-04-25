@@ -1,0 +1,174 @@
+import java.util.*;
+
+class Player {
+    String name;
+    int age;
+    String email;
+
+    Player(String name, int age, String email) {
+        this.name = name;
+        this.age = age;
+        this.email = email;
+    }
+}
+
+public class QuizApp {
+    static Scanner scanner = new Scanner(System.in);
+    static boolean lifeline50_50 = true;
+    static boolean lifelineAudiencePoll = true;
+    static int reward = 0;
+
+    static String[] questions = {
+        "What is the capital of India?",
+        "Which language runs in a web browser?",
+        "Which company owns Android?",
+        "What is the chemical symbol for water?",
+        "Who wrote 'Romeo and Juliet'?",
+        "Which planet is known as the Red Planet?",
+        "Who is known as the father of computers?",
+        "Which gas do plants absorb from the atmosphere?",
+        "What is the square root of 64?",
+        "Which element has the atomic number 1?"
+    };
+
+    static String[][] options = {
+        {"1. Mumbai", "2. Delhi", "3. Bangalore", "4. Hyderabad"},
+        {"1. Java", "2. Python", "3. C", "4. JavaScript"},
+        {"1. Apple", "2. Microsoft", "3. Google", "4. Amazon"},
+        {"1. H2O", "2. CO2", "3. NaCl", "4. O2"},
+        {"1. Charles Dickens", "2. William Shakespeare", "3. Jane Austen", "4. Mark Twain"},
+        {"1. Earth", "2. Venus", "3. Mars", "4. Jupiter"},
+        {"1. Alan Turing", "2. Charles Babbage", "3. Bill Gates", "4. Steve Jobs"},
+        {"1. Oxygen", "2. Nitrogen", "3. Carbon Dioxide", "4. Helium"},
+        {"1. 6", "2. 7", "3. 8", "4. 9"},
+        {"1. Helium", "2. Hydrogen", "3. Oxygen", "4. Nitrogen"}
+    };
+
+    static int[] answers = {2, 4, 3, 1, 2, 3, 2, 3, 3, 2};
+
+    public static void main(String[] args) {
+        System.out.print("Enter your name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter your age: ");
+        int age = scanner.nextInt();
+        scanner.nextLine(); // clear newline
+        System.out.print("Enter your email: ");
+        String email = scanner.nextLine();
+
+        Player player = new Player(name, age, email);
+
+        System.out.println("\nHi " + player.name + ", are you ready for the quiz? (yes/no)");
+        String ready = scanner.nextLine();
+
+        if (!ready.equalsIgnoreCase("yes")) {
+            System.out.println("Game terminated. Thank you!");
+            return;
+        }
+
+        System.out.println("\n---- Quiz Rules ----");
+        System.out.println("1. 10 questions in total.");
+        System.out.println("2. Each correct answer earns ₹1000.");
+        System.out.println("3. You have 2 lifelines: 50-50 and Audience Poll (once each).");
+        System.out.println("4. Wrong answer ends the game.\n");
+
+        for (int i = 0; i < questions.length; i++) {
+            if (!askQuestion(i)) {
+                System.out.println("\n❌ Sorry! Wrong answer.");
+                System.out.println("🙏 Better luck next time!");
+                System.out.println("🏆 You won ₹" + reward);
+                return;
+            }
+        }
+
+        System.out.println("\n🎉 Congratulations! You completed all questions.");
+        System.out.println("🏆 Total winnings: ₹" + reward);
+    }
+
+    static boolean askQuestion(int qIndex) {
+        System.out.println("\nQ" + (qIndex + 1) + ": " + questions[qIndex]);
+        for (String option : options[qIndex]) {
+            System.out.println(option);
+        }
+
+        while (true) {
+            System.out.print("Enter your answer (1-4) or type 'lifeline': ");
+            String input = scanner.nextLine();
+
+            if (input.equalsIgnoreCase("lifeline")) {
+                if (!lifeline50_50 && !lifelineAudiencePoll) {
+                    System.out.println("❗ No lifelines left! Please enter your answer:");
+                    continue;
+                }
+
+                System.out.println("Available lifelines:");
+                if (lifeline50_50) System.out.println("1. 50-50");
+                if (lifelineAudiencePoll) System.out.println("2. Audience Poll");
+
+                String choice = scanner.nextLine();
+
+                if (choice.equals("1") && lifeline50_50) {
+                    lifeline50_50 = false;
+                    System.out.println("🔍 Using 50-50 lifeline...");
+                    System.out.println("Here are two options:");
+                    System.out.println(options[qIndex][answers[qIndex] - 1]);
+                    for (int i = 0; i < 4; i++) {
+                        if ((i + 1) != answers[qIndex]) {
+                            System.out.println(options[qIndex][i]);
+                            break;
+                        }
+                    }
+                } else if (choice.equals("2") && lifelineAudiencePoll) {
+                    lifelineAudiencePoll = false;
+                    System.out.println("📊 Audience Poll results:");
+                    showAudiencePoll(answers[qIndex]);
+                } else {
+                    System.out.println("Invalid or already used lifeline. Try again.");
+                }
+
+            } else {
+                int answer;
+                try {
+                    answer = Integer.parseInt(input);
+                } catch (Exception e) {
+                    System.out.println("Enter a valid number (1-4).");
+                    continue;
+                }
+
+                if (answer == answers[qIndex]) {
+                    System.out.println("✅ Correct! You earned ₹1000.");
+                    reward += 1000;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+
+    static void showAudiencePoll(int correctOption) {
+        int[] votes = new int[4];
+        Random rand = new Random();
+        int totalVotes = 100;
+
+        // Give the correct option a higher percentage
+        votes[correctOption - 1] = rand.nextInt(41) + 40; // 40 to 80%
+        int remaining = totalVotes - votes[correctOption - 1];
+
+        // Randomly distribute the rest
+        for (int i = 0; i < 4; i++) {
+            if (i == correctOption - 1) continue;
+            if (remaining > 0) {
+                int share = rand.nextInt(remaining + 1);
+                votes[i] = share;
+                remaining -= share;
+            }
+        }
+
+        // Display bar chart
+        for (int i = 0; i < 4; i++) {
+            System.out.printf("%s: %2d%% ", options[0][i], votes[i]);
+            for (int j = 0; j < votes[i] / 2; j++) System.out.print("█");
+            System.out.println();
+        }
+    }
+}
